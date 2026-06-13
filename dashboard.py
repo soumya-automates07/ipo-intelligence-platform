@@ -1,0 +1,397 @@
+import streamlit as st
+import pandas as pd
+
+from database.connection import engine
+from database.models import Event, Article, PipelineRun
+from sqlalchemy.orm import sessionmaker
+
+# =====================================================
+# CONFIG
+# =====================================================
+
+st.set_page_config(
+    page_title="IPO Intelligence Platform",
+    page_icon="🚀",
+    layout="wide"
+)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# =====================================================
+# PLATFORM HEALTH
+# =====================================================
+
+latest_run = (
+    session.query(PipelineRun)
+    .order_by(PipelineRun.id.desc())
+    .first()
+)
+
+total_articles = session.query(Article).count()
+total_events = session.query(Event).count()
+total_runs = session.query(PipelineRun).count()
+
+# =====================================================
+# SCORING RULES
+# =====================================================
+
+SCORES = {
+    "IPO Signal": 10,
+    "Funding Round": 8,
+    "Partnership": 4,
+    "Product Launch": 3,
+    "Acquisition": 5,
+    "Regulatory Action": -5,
+    "Legal Issue": -8,
+    "General News": 0
+}
+
+COMPANIES = [
+    "OpenAI",
+    "Anthropic",
+    "SpaceX"
+]
+
+# =====================================================
+# HEADER
+# =====================================================
+
+st.title("🚀 IPO Intelligence Platform")
+
+st.caption(
+    "AI Startup IPO Monitoring & Business Intelligence Dashboard"
+)
+
+# =====================================================
+# PLATFORM HEALTH DASHBOARD
+# =====================================================
+
+st.subheader("🛠️ Platform Health")
+
+h1, h2, h3, h4 = st.columns(4)
+
+with h1:
+    st.metric(
+        "Articles",
+        total_articles
+    )
+
+with h2:
+    st.metric(
+        "Events",
+        total_events
+    )
+
+with h3:
+    st.metric(
+        "Pipeline Runs",
+        total_runs
+    )
+
+with h4:
+    st.metric(
+        "Last Status",
+        latest_run.status if latest_run else "Unknown"
+    )
+
+if latest_run:
+
+    st.caption(
+        f"Last Pipeline Run: {latest_run.run_time}"
+    )
+
+st.divider()
+
+# =====================================================
+# COMPANY SELECTOR
+# =====================================================
+
+selected_company = st.selectbox(
+    "Select Company",
+    COMPANIES
+)
+
+# =====================================================
+# KPI CALCULATION
+# =====================================================
+
+def calculate_company_metrics(company):
+
+    events = session.query(Event).filter_by(
+        company_name=company
+    ).all()
+
+    total_events = len(events)
+
+    ipo_events = 0
+    total_score = 0
+
+    event_breakdown = {}
+
+    for event in events:
+
+        total_score += SCORES.get(
+            event.event_type,
+            0
+        )
+
+        event_breakdown[event.event_type] = (
+            event_breakdown.get(event.event_type, 0) + 1
+        )
+
+        if event.event_type == "IPO Signal":
+            ipo_events += 1
+
+    ipo_signal_percentage = (
+        round(
+            (ipo_events / total_events) * 100,
+            2
+        )
+        if total_events > 0
+        else 0
+    )
+
+    return {
+        "events": total_events,
+        "score": total_score,
+        "ipo_pct": ipo_signal_percentage,
+        "breakdown": event_breakdown
+    }
+
+# =====================================================
+# COMPANY OVERVIEW
+# =====================================================
+
+st.subheader("📊 Company Overview")
+
+col1, col2, col3 = st.columns(3)
+
+for idx, company in enumerate(COMPANIES):
+
+    metrics = calculate_company_metrics(company)
+
+    current_col = [col1, col2, col3][idx]
+
+    with current_col:
+
+        st.markdown(f"### {company}")
+
+        st.metric(
+            "Total Events",
+            metrics["events"]
+        )
+
+        st.metric(
+            "IPO Score",
+            metrics["score"]
+        )
+
+        st.metric(
+            "IPO Signal %",
+            f"{metrics['ipo_pct']}%"
+        )
+
+# =====================================================
+# GLOBAL EVENT DISTRIBUTION
+# =====================================================
+
+st.divider()
+
+st.subheader("📈 Global Event Distribution")
+
+all_events = session.query(Event).all()
+
+global_distribution = {}
+
+for event in all_events:
+
+    if event.event_type == "General News":
+        continue
+
+    global_distribution[event.event_type] = (
+        global_distribution.get(event.event_type, 0) + 1
+    )
+
+if global_distribution:
+    st.bar_chart(global_distribution)
+
+# =====================================================
+# COMPANY ANALYSIS
+# =====================================================
+
+st.divider()
+
+st.header(f"📌 Analysis: {selected_company}")
+
+company_metrics = calculate_company_metrics(
+    selected_company
+)
+
+left, right = st.columns(2)
+
+# =====================================================
+# EVENT BREAKDOWN
+# =====================================================
+
+with left:
+
+    st.subheader("Event Breakdown")
+
+    breakdown = {
+        k: v
+        for k, v in company_metrics["breakdown"].items()
+        if k != "General News"
+    }
+
+    if breakdown:
+        st.bar_chart(breakdown)
+    else:
+        st.info("No classified events available.")
+
+# =====================================================
+# BUSINESS INSIGHT
+# =====================================================
+
+with right:
+
+    st.subheader("Business Insight")
+
+    ipo_pct = company_metrics["ipo_pct"]
+
+    if ipo_pct > 40:
+
+        st.success(
+            f"{selected_company} shows a very strong IPO signal profile. "
+            f"{ipo_pct}% of tracked events are IPO related."
+        )
+
+    elif ipo_pct > 10:
+
+        st.warning(
+            f"{selected_company} shows moderate IPO activity."
+        )
+
+    else:
+
+        st.info(
+            f"{selected_company} currently shows limited IPO-specific activity."
+        )
+
+# =====================================================
+# TOP IPO SIGNALS
+# =====================================================
+
+st.divider()
+
+st.header(f"🚀 Top IPO Signals: {selected_company}")
+
+ipo_events = (
+    session.query(Event)
+    .filter_by(
+        company_name=selected_company,
+        event_type="IPO Signal"
+    )
+    .limit(20)
+    .all()
+)
+
+if ipo_events:
+
+    for event in ipo_events:
+
+        st.success(
+            event.description
+        )
+
+else:
+
+    st.info(
+        "No IPO Signals detected."
+    )
+
+# =====================================================
+# LATEST ARTICLES
+# =====================================================
+
+st.divider()
+
+st.header(f"📰 Latest Articles: {selected_company}")
+
+latest_articles = (
+    session.query(Article)
+    .filter_by(
+        company_name=selected_company
+    )
+    .order_by(
+        Article.id.desc()
+    )
+    .limit(20)
+    .all()
+)
+
+article_data = []
+
+for article in latest_articles:
+
+    article_data.append(
+        {
+            "Headline": article.headline,
+            "Source": article.source
+        }
+    )
+
+if article_data:
+
+    st.dataframe(
+        pd.DataFrame(article_data),
+        use_container_width=True
+    )
+
+# =====================================================
+# RECENT EVENTS
+# =====================================================
+
+st.divider()
+
+st.header(f"📋 Recent Events: {selected_company}")
+
+recent_events = (
+    session.query(Event)
+    .filter_by(
+        company_name=selected_company
+    )
+    .order_by(
+        Event.id.desc()
+    )
+    .limit(25)
+    .all()
+)
+
+event_rows = []
+
+for event in recent_events:
+
+    event_rows.append(
+        {
+            "Event Type": event.event_type,
+            "Description": event.description
+        }
+    )
+
+if event_rows:
+
+    st.dataframe(
+        pd.DataFrame(event_rows),
+        use_container_width=True
+    )
+
+# =====================================================
+# FOOTER
+# =====================================================
+
+st.divider()
+
+st.caption(
+    "IPO Intelligence Platform v3 | Automated by Python + Supabase + FastAPI + n8n"
+)
