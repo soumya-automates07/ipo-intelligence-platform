@@ -1,9 +1,23 @@
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Float
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Float,
+    Text,
+    JSON
+)
+
 from datetime import datetime
+
 
 Base = declarative_base()
 
+
+# ==========================
+# Existing Tables
+# ==========================
 
 class Company(Base):
     __tablename__ = "companies"
@@ -47,12 +61,80 @@ class Sentiment(Base):
     id = Column(Integer, primary_key=True)
     article_id = Column(Integer)
     sentiment = Column(String)
-    
+
+
 class PipelineRun(Base):
     __tablename__ = "pipeline_runs"
 
     id = Column(Integer, primary_key=True)
-    run_time = Column(DateTime, default=datetime.utcnow)
+
+    run_time = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
     status = Column(String)
+
     articles_processed = Column(Integer)
+
     events_created = Column(Integer)
+
+
+# ==========================
+# IPO OFFICIAL SOURCE TABLES
+# ==========================
+
+class IPOWatchlist(Base):
+    __tablename__ = "ipo_watchlist"
+
+    id = Column(Integer, primary_key=True)
+
+    company_name = Column(
+        String,
+        unique=True,
+        nullable=False
+    )
+
+    active = Column(
+        String,
+        default="Y"
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+
+class IPOOfficialEvent(Base):
+    __tablename__ = "ipo_official_events"
+
+    id = Column(Integer, primary_key=True)
+
+    company_name = Column(
+        String,
+        nullable=False
+    )
+
+    source = Column(
+        String,
+        nullable=False
+    )
+
+    event_type = Column(
+        String,
+        nullable=False
+    )
+
+    title = Column(Text)
+
+    source_url = Column(Text)
+
+    filing_date = Column(DateTime)
+
+    detected_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    event_metadata = Column(JSON)

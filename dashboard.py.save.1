@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import requests
 
 from database.connection import engine
 from database.models import Event, Article, PipelineRun
@@ -62,104 +61,19 @@ st.title("🚀 IPO Intelligence Platform")
 # =====================================================
 # LATEST IPO SIGNAL
 # =====================================================
-st.subheader("🚀 Company IPO Signals")
 
-c1, c2, c3 = st.columns(3)
+latest_signal = (
+    session.query(Event)
+    .filter(Event.event_type == "IPO Signal")
+    .order_by(Event.id.desc())
+    .first()
+)
 
-companies = ["OpenAI", "SpaceX", "Anthropic"]
-
-for col, company in zip([c1, c2, c3], companies):
-
-    try:
-
-        response = requests.get(
-            f"http://98.70.25.163:8000/latest-ipo-signal/{company}",
-            timeout=10
-        )
-
-        data = response.json()
-
-        with col:
-
-            st.markdown(f"### {company}")
-
-            if data.get("found"):
-                st.success(
-                    data["description"]
-                )
-            else:
-                st.info(
-                    "No IPO signal found"
-                )
-
-    except Exception:
-
-        with col:
-            st.error(
-                "Unable to load"
-            )
-# =====================================================
-# LATEST IPO SIGNAL
-# =====================================================
-
-try:
-
-    response = requests.get(
-        "http://98.70.25.163:8000/latest-ipo-signal",
-        timeout=10
+if latest_signal:
+    st.success(
+        f"🚀 Latest IPO Signal | {latest_signal.company_name}: "
+        f"{latest_signal.description}"
     )
-
-    data = response.json()
-
-    if data.get("found"):
-
-        st.success(
-            f"🚀 Latest IPO Signal | {data['company']}: "
-            f"{data['description']}"
-        )
-
-except Exception as e:
-
-    st.warning(
-        f"Unable to load latest IPO signal: {e}"
-    )
-import requests
-
-# =====================================================
-# AI EXECUTIVE SUMMARY
-# =====================================================
-
-try:
-
-    response = requests.get(
-        "http://98.70.25.163:8000/latest-ipo-summary",
-        timeout=20
-    )
-
-    data = response.json()
-    if data.get("found"):
-
-        st.subheader("🧠 AI Executive Summary")
-
-        risk = data.get("risk_level", "UNKNOWN")
-
-        if risk == "HIGH":
-            st.error(f"🔴 Risk Level: {risk}")
-
-        elif risk == "MEDIUM":
-            st.warning(f"🟡 Risk Level: {risk}")
-
-        else:
-            st.success(f"🟢 Risk Level: {risk}")
-
-        st.info(data["summary"])
-
-except Exception as e:
-
-    st.warning(
-        f"Unable to load AI summary: {e}"
-    )
-
 # =====================================================
 # PLATFORM KPIs
 # =====================================================
@@ -326,53 +240,6 @@ def calculate_company_metrics(company):
         "ipo_pct": ipo_signal_percentage,
         "breakdown": event_breakdown
     }
-
-# =====================================================
-# ALERT HISTORY
-# =====================================================
-
-st.subheader("📨 Recent Alert History")
-
-try:
-
-    from sqlalchemy import text
-
-    result = session.execute(text("""
-        SELECT company_name,
-               headline,
-               sent_at
-        FROM alert_history
-        ORDER BY sent_at DESC
-        LIMIT 20
-    """))
-
-    rows = result.fetchall()
-
-    if rows:
-
-        history_df = pd.DataFrame(
-            rows,
-            columns=[
-                "Company",
-                "Headline",
-                "Sent At"
-            ]
-        )
-
-        st.dataframe(
-            history_df,
-            use_container_width=True
-        )
-
-    else:
-
-        st.info("No alert history available.")
-
-except Exception as e:
-
-    st.warning(
-        f"Unable to load alert history: {e}"
-    )
 
 # =====================================================
 # COMPANY OVERVIEW
@@ -618,15 +485,7 @@ for company in COMPANIES:
 
     leaderboard.append({
         "Company": company,
-        "Events": count,
-	"IPO Signals": (
-    session.query(Event)
-    .filter(
-        Event.company_name == company,
-        Event.event_type == "IPO Signal"
-    )
-    .count()
-)
+        "Events": count
     })
 
 leaderboard_df = (
@@ -642,31 +501,7 @@ st.dataframe(
     use_container_width=True
 )
 
-# =====================================================
-# PIPELINE STATUS
-# =====================================================
 
-st.subheader("⚙️ Pipeline Status")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric(
-        "Last Run Status",
-        latest_run.status if latest_run else "Unknown"
-    )
-
-with col2:
-    st.metric(
-        "Pipeline Runs",
-        total_runs
-    )
-
-with col3:
-    st.metric(
-        "Total Events",
-        total_events
-    )
 # =====================================================
 # FOOTER
 # =====================================================

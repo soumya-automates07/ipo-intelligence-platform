@@ -20,8 +20,6 @@ feed = feedparser.parse(rss_url)
 
 print("Articles found:", len(feed.entries))
 
-saved_count = 0
-
 for article in feed.entries:
 
     try:
@@ -35,20 +33,15 @@ for article in feed.entries:
             datetime.now(timezone.utc) - published
         ).total_seconds() / 3600
 
-        if age_hours > 48:
+        if age_hours > 24:
             continue
 
     except Exception:
         continue
 
     save_article(
-    company_name="SpaceX",
-    headline=article.title,
-    source="Google News",
-    url=article.link,
-    published_at=published
-)
-
-    saved_count += 1
-
-print(f"Recent articles saved: {saved_count}")
+        company_name="SpaceX",
+        headline=article.title,
+        source="Google News",
+        url=article.link
+    )
