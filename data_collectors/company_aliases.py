@@ -16,6 +16,8 @@ COMPANY_ALIASES = {
         "SPACE EXPLORATION TECHNOLOGIES CORP",
         "Space Exploration Technologies Corp",
         "Space Exploration Technologies Corporation",
-        "SpaceX"
+        "SpaceX",
+	"SPACE EXPLORATION TECHNOLOGIES"
+	"Space Exploration Technologies"
     ]
 }
