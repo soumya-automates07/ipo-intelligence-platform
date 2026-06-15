@@ -41,10 +41,14 @@ class IPORepository:
             event = (
                 db.query(IPOOfficialEvent)
                 .filter(
-                    IPOOfficialEvent.company_name == company_name,
-                    IPOOfficialEvent.source == source,
-                    IPOOfficialEvent.event_type == event_type,
-                    IPOOfficialEvent.source_url == source_url
+                    IPOOfficialEvent.company_name ==
+                    company_name,
+
+                    IPOOfficialEvent.source ==
+                    source,
+
+                    IPOOfficialEvent.event_type ==
+                    event_type
                 )
                 .first()
             )
@@ -73,10 +77,14 @@ class IPORepository:
             existing = (
                 db.query(IPOOfficialEvent)
                 .filter(
-                    IPOOfficialEvent.company_name == company_name,
-                    IPOOfficialEvent.source == source,
-                    IPOOfficialEvent.event_type == event_type,
-                    IPOOfficialEvent.source_url == source_url
+                    IPOOfficialEvent.company_name ==
+                    company_name,
+
+                    IPOOfficialEvent.source ==
+                    source,
+
+                    IPOOfficialEvent.event_type ==
+                    event_type
                 )
                 .first()
             )
@@ -86,13 +94,27 @@ class IPORepository:
                 return False
 
             event = IPOOfficialEvent(
-                company_name=company_name,
-                source=source,
-                event_type=event_type,
-                title=title,
-                source_url=source_url,
-                filing_date=filing_date,
-                event_metadata=event_metadata
+
+                company_name=
+                    company_name,
+
+                source=
+                    source,
+
+                event_type=
+                    event_type,
+
+                title=
+                    title,
+
+                source_url=
+                    source_url,
+
+                filing_date=
+                    filing_date,
+
+                event_metadata=
+                    event_metadata
             )
 
             db.add(event)
@@ -115,7 +137,8 @@ class IPORepository:
             return (
                 db.query(IPOOfficialEvent)
                 .filter(
-                    IPOOfficialEvent.company_name == company_name
+                    IPOOfficialEvent.company_name ==
+                    company_name
                 )
                 .all()
             )
