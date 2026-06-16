@@ -28,7 +28,7 @@ Detailed company intelligence page showing IPO progression, historical event tim
 
 Interactive FastAPI documentation for exploring platform endpoints and testing IPO intelligence APIs.
 
-![API Documentation](screenshot/API_docs.png)
+![API Documentation](screenshot/api_docs.png)
 
 ---
 
@@ -44,7 +44,7 @@ Automated workflow responsible for processing IPO events and triggering downstre
 
 Production environment hosted on Microsoft Azure Virtual Machine with automated services and scheduled IPO monitoring pipelines.
 
-![Azure VM](screenshot/Azure_VM.png)
+![Azure VM](screenshot/azure_VM.png)
 
 ---
 
