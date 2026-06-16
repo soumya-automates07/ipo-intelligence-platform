@@ -44,7 +44,7 @@ Automated workflow responsible for processing IPO events and triggering downstre
 
 Production environment hosted on Microsoft Azure Virtual Machine with automated services and scheduled IPO monitoring pipelines.
 
-![Azure VM](screenshot/azure_VM.png)
+![Azure VM](screenshot/azure_vm.png)
 
 ---
 
