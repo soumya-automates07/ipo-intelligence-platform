@@ -12,7 +12,7 @@ Unlike traditional IPO trackers that rely on news articles and rumors, this plat
 
 The main monitoring dashboard displaying tracked companies, IPO readiness, latest events, platform health, and watchlist activity.
 
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](screenshot/dashboard.png)
 
 ---
 
@@ -20,7 +20,7 @@ The main monitoring dashboard displaying tracked companies, IPO readiness, lates
 
 Detailed company intelligence page showing IPO progression, historical event timeline, readiness score, and official filing history.
 
-![Company Overview](screenshots/Company_overview.png)
+![Company Overview](screenshot/Company_overview.png)
 
 ---
 
@@ -28,7 +28,7 @@ Detailed company intelligence page showing IPO progression, historical event tim
 
 Interactive FastAPI documentation for exploring platform endpoints and testing IPO intelligence APIs.
 
-![API Documentation](screenshots/API_docs.png)
+![API Documentation](screenshot/API_docs.png)
 
 ---
 
@@ -36,7 +36,7 @@ Interactive FastAPI documentation for exploring platform endpoints and testing I
 
 Automated workflow responsible for processing IPO events and triggering downstream notifications.
 
-![n8n Workflow](screenshots/n8n_workflow.png)
+![n8n Workflow](screenshot/n8n_workflow.png)
 
 ---
 
@@ -44,7 +44,7 @@ Automated workflow responsible for processing IPO events and triggering downstre
 
 Production environment hosted on Microsoft Azure Virtual Machine with automated services and scheduled IPO monitoring pipelines.
 
-![Azure VM](screenshots/Azure_VM.png)
+![Azure VM](screenshot/Azure_VM.png)
 
 ---
 
